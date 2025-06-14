@@ -10,9 +10,9 @@ import java.util.List;
 public class Subscription {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
-    private long patientId;
+    private Long patientId;
 
     private String subscriberEmail;
 
