@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class AlertService {
@@ -46,10 +47,36 @@ public class AlertService {
         log.setAlertId(savedAlert.getId());
         log.setAttempt(1);
         log.setTimestamp(LocalDateTime.now());
-        log.setStatus("Success");
+        log.setStatus("Delivered");
         log.setMethod("Email");
         log.setResponseCode(200);
 
         deliveryLogRepository.save(log);
+    }
+
+    public List<Alert> getAlertByPatientId(Long patientId) {
+        return alertRepository.findByPatientIdOrderByTimestampDesc(patientId);
+    }
+
+    public Alert getAlertByAlertId(Long alertId) {
+        return alertRepository.findById(alertId)
+                .orElseThrow(() -> new RuntimeException("alert not found with id: " + alertId));
+    }
+
+    public List<Alert> getFilteredAlerts(Long patientId, String type, String startDate, String endDate) {
+        LocalDateTime start = (startDate != null) ? LocalDateTime.parse(startDate) : null;
+        LocalDateTime end = (endDate != null) ? LocalDateTime.parse(endDate) : null;
+        if(type != null && start != null && end != null) {
+            return alertRepository.findByPatientIdAndTypeAndTimestampBetween(patientId, type, start, end);
+        }
+        else if(type != null) {
+            return alertRepository.findByPatientIdAndType(patientId, type);
+        }
+        else if(start != null && end != null) {
+            return alertRepository.findByPatientIdAndTimestampBetween(patientId, start, end);
+        }
+        else  {
+            return alertRepository.findByPatientIdOrderByTimestampDesc(patientId);
+        }
     }
 }
